@@ -10,10 +10,10 @@ def main():
         command = input()
 
         if command == "exit":
-            sys.exit(1)
-        else:
-            # Prints the "<command>: command not found" message
-            print(f"{command}: command not found")
+            break
+
+        # Prints the "<command>: command not found" message
+        print(f"{command}: command not found")
 
 
 if __name__ == "__main__":
