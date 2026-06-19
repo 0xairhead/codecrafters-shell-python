@@ -2,23 +2,37 @@ import sys
 
 
 def main():
-    while True:
-        # TODO: Uncomment the code below to pass the first stage
-        sys.stdout.write("$ ")
+    builtins = {"echo", "exit", "type"}
 
-        # Captures the user's command in the "command" variable
+    while True:
+        sys.stdout.write("$ ")
+        sys.stdout.flush()
+
         command = input()
 
-        if command == "exit":
-            break
+        parts = command.split()
+        if not parts:
+            continue
 
-        elif command.startswith("echo "):
-            # Handle the echo command
+        cmd = parts[0]
+
+        if cmd == "exit":
+            sys.exit(0)
+
+        if cmd == "echo":
             print(command[5:])
+            continue
 
-        else:
-            # Prints the "<command>: command not found" message
-            print(f"{command}: command not found")
+        if cmd == "type":
+            target = parts[1]
+            if target in builtins:
+                print(f"{target} is a shell builtin")
+            else:
+                print(f"{target}: not found")
+            continue
+
+        print(f"{cmd}: not found")
+
 
 if __name__ == "__main__":
     main()
