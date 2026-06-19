@@ -1,3 +1,4 @@
+import shutil
 import sys
 
 
@@ -24,11 +25,16 @@ def main():
             continue
 
         if cmd == "type":
-            target = parts[1]
-            if target in builtins:
-                print(f"{target} is a shell builtin")
-            else:
-                print(f"{target}: not found")
+            if len(parts) > 1:
+                target = parts[1]
+                if target in builtins:
+                    print(f"{target} is a shell builtin")
+                else:
+                    path = shutil.which(target)
+                    if path:
+                        print(f"{target} is {path}")
+                    else:
+                        print(f"{target}: not found")
             continue
 
         print(f"{cmd}: not found")
