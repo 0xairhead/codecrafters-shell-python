@@ -12,9 +12,13 @@ def main():
         if command == "exit":
             break
 
-        # Prints the "<command>: command not found" message
-        print(f"{command}: command not found")
+        elif command.startswith("echo "):
+            # Handle the echo command
+            print(command[5:])
 
+        else:
+            # Prints the "<command>: command not found" message
+            print(f"{command}: command not found")
 
 if __name__ == "__main__":
     main()
