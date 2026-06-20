@@ -123,7 +123,9 @@ def main():
             # Check if the command is an external program executable in PATH
             path = shutil.which(cmd)
             if path:
-                subprocess.run(parts, executable=path, stdout=out_stream, stderr=err_stream)
+                subprocess.run(
+                    parts, executable=path, stdout=out_stream, stderr=err_stream
+                )
             else:
                 print(f"{cmd}: not found", file=err_stream)
 
