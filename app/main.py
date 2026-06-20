@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 import sys
 
 
@@ -35,6 +36,12 @@ def main():
                         print(f"{target} is {path}")
                     else:
                         print(f"{target}: not found")
+            continue
+
+        # Check if the command is an external program executable in PATH
+        path = shutil.which(cmd)
+        if path:
+            subprocess.run(parts, executable=path)
             continue
 
         print(f"{cmd}: not found")
