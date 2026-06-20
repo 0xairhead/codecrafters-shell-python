@@ -39,18 +39,21 @@ def main():
         cmd = parts[0]
 
         # Open redirection file if specified
+        out_stream = sys.stdout
         if redirect_file:
             os.makedirs(os.path.dirname(redirect_file), exist_ok=True)
-            sys.stdout = open(redirect_file, "w")
+            out_stream = open(redirect_file, "w")
 
         if cmd == "exit":
+            if redirect_file:
+                out_stream.close()
             sys.exit(0)
 
         elif cmd == "echo":
-            print(*parts[1:])
+            print(*parts[1:], file=out_stream)
 
         elif cmd == "pwd":
-            print(os.getcwd())
+            print(os.getcwd(), file=out_stream)
 
         elif cmd == "cd":
             if len(parts) > 1:
@@ -72,11 +75,11 @@ def main():
             if len(parts) > 1:
                 target = parts[1]
                 if target in builtins:
-                    print(f"{target} is a shell builtin")
+                    print(f"{target} is a shell builtin", file=out_stream)
                 else:
                     path = shutil.which(target)
                     if path:
-                        print(f"{target} is {path}")
+                        print(f"{target} is {path}", file=out_stream)
                     else:
                         print(f"{target}: not found", file=sys.stderr)
 
@@ -84,9 +87,16 @@ def main():
             # Check if the command is an external program executable in PATH
             path = shutil.which(cmd)
             if path:
-                subprocess.run(parts, executable=path, stdout=sys.stdout)
+                if redirect_file:
+                    subprocess.run(parts, executable=path, stdout=out_stream)
+                else:
+                    subprocess.run(parts, executable=path)
             else:
                 print(f"{cmd}: not found", file=sys.stderr)
+
+        # Close redirection file if opened
+        if redirect_file:
+            out_stream.close()
 
 
 if __name__ == "__main__":
