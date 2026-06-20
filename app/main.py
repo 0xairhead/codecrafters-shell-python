@@ -22,8 +22,10 @@ def main():
         if not parts:
             continue
 
-        # Parse standard output redirection
+        # Parse standard output and standard error redirection
         redirect_file = None
+        redirect_stderr_file = None
+
         if ">" in parts:
             idx = parts.index(">")
             redirect_file = parts[idx + 1]
@@ -32,21 +34,32 @@ def main():
             idx = parts.index("1>")
             redirect_file = parts[idx + 1]
             parts = parts[:idx]
+        elif "2>" in parts:
+            idx = parts.index("2>")
+            redirect_stderr_file = parts[idx + 1]
+            parts = parts[:idx]
 
         if not parts:
             continue
 
         cmd = parts[0]
 
-        # Open redirection file if specified
+        # Open redirection streams if specified
         out_stream = sys.stdout
         if redirect_file:
             os.makedirs(os.path.dirname(redirect_file), exist_ok=True)
             out_stream = open(redirect_file, "w")
 
+        err_stream = sys.stderr
+        if redirect_stderr_file:
+            os.makedirs(os.path.dirname(redirect_stderr_file), exist_ok=True)
+            err_stream = open(redirect_stderr_file, "w")
+
         if cmd == "exit":
             if redirect_file:
                 out_stream.close()
+            if redirect_stderr_file:
+                err_stream.close()
             sys.exit(0)
 
         elif cmd == "echo":
@@ -69,7 +82,7 @@ def main():
             try:
                 os.chdir(path)
             except FileNotFoundError:
-                print(f"cd: {target}: No such file or directory", file=sys.stderr)
+                print(f"cd: {target}: No such file or directory", file=err_stream)
 
         elif cmd == "type":
             if len(parts) > 1:
@@ -81,22 +94,21 @@ def main():
                     if path:
                         print(f"{target} is {path}", file=out_stream)
                     else:
-                        print(f"{target}: not found", file=sys.stderr)
+                        print(f"{target}: not found", file=err_stream)
 
         else:
             # Check if the command is an external program executable in PATH
             path = shutil.which(cmd)
             if path:
-                if redirect_file:
-                    subprocess.run(parts, executable=path, stdout=out_stream)
-                else:
-                    subprocess.run(parts, executable=path)
+                subprocess.run(parts, executable=path, stdout=out_stream, stderr=err_stream)
             else:
-                print(f"{cmd}: not found", file=sys.stderr)
+                print(f"{cmd}: not found", file=err_stream)
 
-        # Close redirection file if opened
+        # Close redirection files if opened
         if redirect_file:
             out_stream.close()
+        if redirect_stderr_file:
+            err_stream.close()
 
 
 if __name__ == "__main__":
