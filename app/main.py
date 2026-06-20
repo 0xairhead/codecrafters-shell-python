@@ -1,4 +1,5 @@
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -13,7 +14,11 @@ def main():
 
         command = input()
 
-        parts = command.split()
+        try:
+            parts = shlex.split(command)
+        except ValueError:
+            continue
+
         if not parts:
             continue
 
@@ -23,7 +28,7 @@ def main():
             sys.exit(0)
 
         if cmd == "echo":
-            print(command[5:])
+            print(*parts[1:])
             continue
 
         if cmd == "pwd":
@@ -31,16 +36,20 @@ def main():
             continue
 
         if cmd == "cd":
-            if len(parts) < 2:
+            if len(parts) > 1:
+                target = parts[1]
+            else:
+                target = "~"
+
+            if target == "~":
                 path = os.environ.get("HOME")
             else:
-                path = parts[1]
-                if path == "~":
-                    path = os.environ.get("HOME")
+                path = target
+
             try:
                 os.chdir(path)
             except FileNotFoundError:
-                print(f"cd: {parts[1]}: No such file or directory")
+                print(f"cd: {target}: No such file or directory")
             continue
 
         if cmd == "type":
