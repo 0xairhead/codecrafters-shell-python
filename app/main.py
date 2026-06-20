@@ -22,20 +22,37 @@ def main():
         if not parts:
             continue
 
+        # Parse standard output redirection
+        redirect_file = None
+        if ">" in parts:
+            idx = parts.index(">")
+            redirect_file = parts[idx + 1]
+            parts = parts[:idx]
+        elif "1>" in parts:
+            idx = parts.index("1>")
+            redirect_file = parts[idx + 1]
+            parts = parts[:idx]
+
+        if not parts:
+            continue
+
         cmd = parts[0]
+
+        # Open redirection file if specified
+        if redirect_file:
+            os.makedirs(os.path.dirname(redirect_file), exist_ok=True)
+            sys.stdout = open(redirect_file, "w")
 
         if cmd == "exit":
             sys.exit(0)
 
-        if cmd == "echo":
+        elif cmd == "echo":
             print(*parts[1:])
-            continue
 
-        if cmd == "pwd":
+        elif cmd == "pwd":
             print(os.getcwd())
-            continue
 
-        if cmd == "cd":
+        elif cmd == "cd":
             if len(parts) > 1:
                 target = parts[1]
             else:
@@ -49,10 +66,9 @@ def main():
             try:
                 os.chdir(path)
             except FileNotFoundError:
-                print(f"cd: {target}: No such file or directory")
-            continue
+                print(f"cd: {target}: No such file or directory", file=sys.stderr)
 
-        if cmd == "type":
+        elif cmd == "type":
             if len(parts) > 1:
                 target = parts[1]
                 if target in builtins:
@@ -62,16 +78,15 @@ def main():
                     if path:
                         print(f"{target} is {path}")
                     else:
-                        print(f"{target}: not found")
-            continue
+                        print(f"{target}: not found", file=sys.stderr)
 
-        # Check if the command is an external program executable in PATH
-        path = shutil.which(cmd)
-        if path:
-            subprocess.run(parts, executable=path)
-            continue
-
-        print(f"{cmd}: not found")
+        else:
+            # Check if the command is an external program executable in PATH
+            path = shutil.which(cmd)
+            if path:
+                subprocess.run(parts, executable=path, stdout=sys.stdout)
+            else:
+                print(f"{cmd}: not found", file=sys.stderr)
 
 
 if __name__ == "__main__":
