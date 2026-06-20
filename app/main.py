@@ -25,6 +25,7 @@ def main():
         # Parse standard output and standard error redirection
         redirect_file = None
         redirect_stderr_file = None
+        append_mode = False
 
         if ">" in parts:
             idx = parts.index(">")
@@ -33,6 +34,16 @@ def main():
         elif "1>" in parts:
             idx = parts.index("1>")
             redirect_file = parts[idx + 1]
+            parts = parts[:idx]
+        elif ">>" in parts:
+            idx = parts.index(">>")
+            redirect_file = parts[idx + 1]
+            append_mode = True
+            parts = parts[:idx]
+        elif "1>>" in parts:
+            idx = parts.index("1>>")
+            redirect_file = parts[idx + 1]
+            append_mode = True
             parts = parts[:idx]
         elif "2>" in parts:
             idx = parts.index("2>")
@@ -48,7 +59,10 @@ def main():
         out_stream = sys.stdout
         if redirect_file:
             os.makedirs(os.path.dirname(redirect_file), exist_ok=True)
-            out_stream = open(redirect_file, "w")
+            if append_mode:
+                out_stream = open(redirect_file, "a")
+            else:
+                out_stream = open(redirect_file, "w")
 
         err_stream = sys.stderr
         if redirect_stderr_file:
