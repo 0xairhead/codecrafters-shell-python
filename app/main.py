@@ -26,6 +26,7 @@ def main():
         redirect_file = None
         redirect_stderr_file = None
         append_mode = False
+        append_stderr_mode = False
 
         if ">" in parts:
             idx = parts.index(">")
@@ -49,6 +50,11 @@ def main():
             idx = parts.index("2>")
             redirect_stderr_file = parts[idx + 1]
             parts = parts[:idx]
+        elif "2>>" in parts:
+            idx = parts.index("2>>")
+            redirect_stderr_file = parts[idx + 1]
+            append_stderr_mode = True
+            parts = parts[:idx]
 
         if not parts:
             continue
@@ -67,7 +73,10 @@ def main():
         err_stream = sys.stderr
         if redirect_stderr_file:
             os.makedirs(os.path.dirname(redirect_stderr_file), exist_ok=True)
-            err_stream = open(redirect_stderr_file, "w")
+            if append_stderr_mode:
+                err_stream = open(redirect_stderr_file, "a")
+            else:
+                err_stream = open(redirect_stderr_file, "w")
 
         if cmd == "exit":
             if redirect_file:
