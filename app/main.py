@@ -1,10 +1,11 @@
+import os
 import shutil
 import subprocess
 import sys
 
 
 def main():
-    builtins = {"echo", "exit", "type"}
+    builtins = {"echo", "exit", "type", "pwd"}
 
     while True:
         sys.stdout.write("$ ")
@@ -23,6 +24,10 @@ def main():
 
         if cmd == "echo":
             print(command[5:])
+            continue
+
+        if cmd == "pwd":
+            print(os.getcwd())
             continue
 
         if cmd == "type":
