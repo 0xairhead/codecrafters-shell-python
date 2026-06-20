@@ -31,11 +31,16 @@ def main():
             continue
 
         if cmd == "cd":
-            path = parts[1]
+            if len(parts) < 2:
+                path = os.environ.get("HOME")
+            else:
+                path = parts[1]
+                if path == "~":
+                    path = os.environ.get("HOME")
             try:
                 os.chdir(path)
             except FileNotFoundError:
-                print(f"cd: {path}: No such file or directory")
+                print(f"cd: {parts[1]}: No such file or directory")
             continue
 
         if cmd == "type":
