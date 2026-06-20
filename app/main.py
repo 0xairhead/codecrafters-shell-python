@@ -5,7 +5,7 @@ import sys
 
 
 def main():
-    builtins = {"echo", "exit", "type", "pwd"}
+    builtins = {"echo", "exit", "type", "pwd", "cd"}
 
     while True:
         sys.stdout.write("$ ")
@@ -28,6 +28,14 @@ def main():
 
         if cmd == "pwd":
             print(os.getcwd())
+            continue
+
+        if cmd == "cd":
+            path = parts[1]
+            try:
+                os.chdir(path)
+            except FileNotFoundError:
+                print(f"cd: {path}: No such file or directory")
             continue
 
         if cmd == "type":
