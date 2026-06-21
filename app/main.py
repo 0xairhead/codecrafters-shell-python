@@ -1,11 +1,26 @@
 import os
+import readline
 import shlex
 import shutil
 import subprocess
 import sys
 
 
+def completer(text, state):
+    matches = []
+    for cmd in ["echo", "exit"]:
+        if cmd.startswith(text):
+            matches.append(cmd + " ")
+
+    if state < len(matches):
+        return matches[state]
+    return None
+
+
 def main():
+    readline.set_completer(completer)
+    readline.parse_and_bind("tab: complete")
+
     builtins = {"echo", "exit", "type", "pwd", "cd"}
 
     while True:
@@ -14,9 +29,12 @@ def main():
 
         command = input()
 
+        print(f"[DEBUG] Raw command input: {repr(command)}")
         try:
             parts = shlex.split(command)
-        except ValueError:
+            print(f"[DEBUG] shlex.split output: {parts}")
+        except ValueError as e:
+            print(f"[DEBUG] shlex.split failed with ValueError: {e}")
             continue
 
         if not parts:
@@ -30,28 +48,34 @@ def main():
 
         if ">" in parts:
             idx = parts.index(">")
+            print(f"[DEBUG] Redirection '>' found at index {idx}")
             redirect_file = parts[idx + 1]
             parts = parts[:idx]
         elif "1>" in parts:
             idx = parts.index("1>")
+            print(f"[DEBUG] Redirection '1>' found at index {idx}")
             redirect_file = parts[idx + 1]
             parts = parts[:idx]
         elif ">>" in parts:
             idx = parts.index(">>")
+            print(f"[DEBUG] Redirection '>>' found at index {idx}")
             redirect_file = parts[idx + 1]
             append_mode = True
             parts = parts[:idx]
         elif "1>>" in parts:
             idx = parts.index("1>>")
+            print(f"[DEBUG] Redirection '1>>' found at index {idx}")
             redirect_file = parts[idx + 1]
             append_mode = True
             parts = parts[:idx]
         elif "2>" in parts:
             idx = parts.index("2>")
+            print(f"[DEBUG] Redirection '2>' found at index {idx}")
             redirect_stderr_file = parts[idx + 1]
             parts = parts[:idx]
         elif "2>>" in parts:
             idx = parts.index("2>>")
+            print(f"[DEBUG] Redirection '2>>' found at index {idx}")
             redirect_stderr_file = parts[idx + 1]
             append_stderr_mode = True
             parts = parts[:idx]
@@ -64,7 +88,9 @@ def main():
         # Open redirection streams if specified
         out_stream = sys.stdout
         if redirect_file:
-            os.makedirs(os.path.dirname(redirect_file), exist_ok=True)
+            dir_name = os.path.dirname(redirect_file)
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
             if append_mode:
                 out_stream = open(redirect_file, "a")
             else:
@@ -72,7 +98,9 @@ def main():
 
         err_stream = sys.stderr
         if redirect_stderr_file:
-            os.makedirs(os.path.dirname(redirect_stderr_file), exist_ok=True)
+            dir_name = os.path.dirname(redirect_stderr_file)
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
             if append_stderr_mode:
                 err_stream = open(redirect_stderr_file, "a")
             else:
