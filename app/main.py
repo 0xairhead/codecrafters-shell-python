@@ -39,9 +39,10 @@ def completer(text, state):
 
 def display_matches(substitution, matches, longest_match_length):
     sys.stdout.write("\n")
-    actual_options = matches[1:]
-    if not actual_options:
-        actual_options = matches
+    actual_options = []
+    for m in matches:
+        if m != substitution:
+            actual_options.append(m)
     unique_options = sorted(list(set(actual_options)))
     sys.stdout.write("  ".join(unique_options) + "\n")
     sys.stdout.write("$ " + readline.get_line_buffer())
