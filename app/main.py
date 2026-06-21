@@ -29,12 +29,9 @@ def main():
 
         command = input()
 
-        print(f"[DEBUG] Raw command input: {repr(command)}")
         try:
             parts = shlex.split(command)
-            print(f"[DEBUG] shlex.split output: {parts}")
-        except ValueError as e:
-            print(f"[DEBUG] shlex.split failed with ValueError: {e}")
+        except ValueError:
             continue
 
         if not parts:
@@ -48,34 +45,28 @@ def main():
 
         if ">" in parts:
             idx = parts.index(">")
-            print(f"[DEBUG] Redirection '>' found at index {idx}")
             redirect_file = parts[idx + 1]
             parts = parts[:idx]
         elif "1>" in parts:
             idx = parts.index("1>")
-            print(f"[DEBUG] Redirection '1>' found at index {idx}")
             redirect_file = parts[idx + 1]
             parts = parts[:idx]
         elif ">>" in parts:
             idx = parts.index(">>")
-            print(f"[DEBUG] Redirection '>>' found at index {idx}")
             redirect_file = parts[idx + 1]
             append_mode = True
             parts = parts[:idx]
         elif "1>>" in parts:
             idx = parts.index("1>>")
-            print(f"[DEBUG] Redirection '1>>' found at index {idx}")
             redirect_file = parts[idx + 1]
             append_mode = True
             parts = parts[:idx]
         elif "2>" in parts:
             idx = parts.index("2>")
-            print(f"[DEBUG] Redirection '2>' found at index {idx}")
             redirect_stderr_file = parts[idx + 1]
             parts = parts[:idx]
         elif "2>>" in parts:
             idx = parts.index("2>>")
-            print(f"[DEBUG] Redirection '2>>' found at index {idx}")
             redirect_stderr_file = parts[idx + 1]
             append_stderr_mode = True
             parts = parts[:idx]
