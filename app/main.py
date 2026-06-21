@@ -10,7 +10,7 @@ def completer(text, state):
     matches = []
     for cmd in ["echo", "exit", "type", "pwd", "cd"]:
         if cmd.startswith(text):
-            matches.append(cmd + " ")
+            matches.append(cmd)
 
     path_env = os.environ.get("PATH", "")
     for directory in path_env.split(os.pathsep):
@@ -23,19 +23,34 @@ def completer(text, state):
                     if filename.startswith(text):
                         if os.path.isfile(filepath):
                             if os.access(filepath, os.X_OK):
-                                candidate = filename + " "
-                                if candidate not in matches:
-                                    matches.append(candidate)
+                                if filename not in matches:
+                                    matches.append(filename)
         except OSError:
             continue
 
+    matches.sort()
+
     if state < len(matches):
+        if len(matches) == 1:
+            return matches[state] + " "
         return matches[state]
     return None
 
 
+def display_matches(substitution, matches, longest_match_length):
+    sys.stdout.write("\n")
+    actual_options = matches[1:]
+    if not actual_options:
+        actual_options = matches
+    unique_options = sorted(list(set(actual_options)))
+    sys.stdout.write("  ".join(unique_options) + "\n")
+    sys.stdout.write("$ " + readline.get_line_buffer())
+    sys.stdout.flush()
+
+
 def main():
     readline.set_completer(completer)
+    readline.set_completion_display_matches_hook(display_matches)
     readline.parse_and_bind("tab: complete")
     if "libedit" in (readline.__doc__ or ""):
         readline.parse_and_bind("bind ^I rl_complete")
