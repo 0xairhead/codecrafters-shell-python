@@ -8,9 +8,26 @@ import sys
 
 def completer(text, state):
     matches = []
-    for cmd in ["echo", "exit"]:
+    for cmd in ["echo", "exit", "type", "pwd", "cd"]:
         if cmd.startswith(text):
             matches.append(cmd + " ")
+
+    path_env = os.environ.get("PATH", "")
+    for directory in path_env.split(os.pathsep):
+        if not directory:
+            continue
+        try:
+            if os.path.isdir(directory):
+                for filename in os.listdir(directory):
+                    filepath = os.path.join(directory, filename)
+                    if filename.startswith(text):
+                        if os.path.isfile(filepath):
+                            if os.access(filepath, os.X_OK):
+                                candidate = filename + " "
+                                if candidate not in matches:
+                                    matches.append(candidate)
+        except OSError:
+            continue
 
     if state < len(matches):
         return matches[state]
