@@ -20,7 +20,8 @@ def completer(text, state):
 def main():
     readline.set_completer(completer)
     readline.parse_and_bind("tab: complete")
-    readline.parse_and_bind("bind ^I rl_complete")
+    if "libedit" in (readline.__doc__ or ""):
+        readline.parse_and_bind("bind ^I rl_complete")
 
     builtins = {"echo", "exit", "type", "pwd", "cd"}
 
